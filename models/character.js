@@ -18,14 +18,66 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   character.init({
-    name: DataTypes.STRING,
-    age: DataTypes.INTEGER,
-    history: DataTypes.TEXT,
-    weight: DataTypes.INTEGER,
-    image: DataTypes.STRING
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'El nombre es obligatorio'
+        },
+        notEmpty: {
+          msg: 'El nombre no puede estar vacio'
+        }
+      }
+    },
+    age: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'La edad es obligatorio'
+        },
+        notEmpty: {
+          msg: 'La edad no puede estar vacio'
+        },
+        isNumeric: {
+          msg: 'La edad tiene que ser un campo numerico'
+        }
+      }
+    },
+    history: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'La historia es obligatorio'
+        },
+        notEmpty: {
+          msg: 'La historia no puede estar vacio'
+        }
+      }
+    },
+    weight: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'El peso es obligatorio'
+        },
+        notEmpty: {
+          msg: 'El peso no puede estar vacio'
+        },
+        isNumeric: {
+          msg: 'El peso tiene que ser un campo numerico'
+        }
+      }
+    },
+    image: DataTypes.STRING,
+    is_delete: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'character',
+    tableName: 'character'
   });
   return character;
 };

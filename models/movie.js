@@ -21,15 +21,60 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Movie.init({
-    title: DataTypes.STRING,
-    publication_date: DataTypes.DATE,
-    qualification: DataTypes.INTEGER,
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'El titulo es un campo obligatorio'
+        },
+        notEmpty: {
+          msg: 'El titulo no puede estar vacio'
+        }
+      }
+    },
+    publication_date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'La fecha de publicacion es obligatorio'
+        },
+        notEmpty: {
+          msg: 'la fecha de publicacion no puede estar vacio'
+        }
+      }
+    },
+    qualification: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'La califacion es obligatorio'
+        },
+        notEmpty: {
+          msg: 'La califacion no puede estar vacio'
+        }
+      }
+    },
     gender_id: {
       type: DataTypes.INTEGER,
       references: {
         model: 'Gender',
         key: 'id'
+      },
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'El genero es obligatorio'
+        },
+        notEmpty: {
+          msg: 'El genero no puede estar vacio'
+        }
       }
+    },
+    is_delete: {
+      type: DataTypes.BOOLEAN
     }
   }, {
     sequelize,
