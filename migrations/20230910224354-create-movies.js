@@ -25,7 +25,7 @@ module.exports = {
           key: 'id'
         }
       },
-      delete:{
+      is_delete:{
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },

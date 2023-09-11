@@ -12,7 +12,7 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
-      delete:{
+      is_delete:{
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
