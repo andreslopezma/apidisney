@@ -1,5 +1,5 @@
 const { ValidationError, Op } = require('sequelize');
-const { character } = require('../models');
+const { character, Movie, character_movie } = require('../models');
 
 exports.getAllCharacters = async ({ query }, res) => {
     const { order } = query;
@@ -8,7 +8,6 @@ exports.getAllCharacters = async ({ query }, res) => {
     try {
         if (Object.keys(query).find(key => key == 'name')) {
             conditions = {
-                ...query,
                 name: {
                     [Op.like]: `%${query['name']}%`
                 }
@@ -17,11 +16,32 @@ exports.getAllCharacters = async ({ query }, res) => {
         const objCharacter = await character.findAll({
             where: {
                 is_delete: false,
-                ...conditions
+                ...conditions,
+                ...query
             },
             order: [
-                ['name', order]
+                ['name', order ? order : 'ASC']
             ]
+        });
+        res.status(200).json(objCharacter);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+exports.getCharacter = async ({ params }, res) => {
+    const { id } = params
+    try {
+        const objCharacter = await character.findAll({
+            where: { id },
+            include: [{
+                model: Movie,
+                attributes: ['title', 'id'],
+                as: 'movie',
+                through: {
+                    where: { is_delete: false }
+                }
+            }]
         });
         res.status(200).json(objCharacter);
     } catch (error) {
@@ -31,7 +51,21 @@ exports.getAllCharacters = async ({ query }, res) => {
 
 exports.createCharaceter = async ({ body }, res) => {
     try {
+        const { movies } = body;
         const { dataValues } = await character.create(body);
+        movies.forEach(async (movie) => {
+            await character_movie.create({
+                character_id: dataValues.id,
+                movie_id: movie
+            }).catch(error => {
+                return res.status(404).send({
+                    message: 'Hubo un error al crear el nuevo registro',
+                    error,
+                    process: false
+                });
+            });
+        });
+
         res.status(200).json({
             message: 'Se creo el personaje con exito',
             id: dataValues.id,
@@ -50,11 +84,41 @@ exports.createCharaceter = async ({ body }, res) => {
 exports.updateCharacter = async ({ body, params }, res) => {
     try {
         const { id } = params;
-
+        const { movies } = body;
         const objCharacter = await character.findByPk(id);
         if (!objCharacter) {
             return res.status(404).send({ message: 'Personaje no encontrada' });
         }
+        // delete the old chracter movies
+        character_movie.update(
+            { is_delete: 'true' },
+            {
+                where: {
+                    character_id: id,
+                    is_delete: 'false'
+                }
+            }
+        )
+            .catch(error => {
+                return res.status(404).send({
+                    message: 'Hubo un error al actulizar',
+                    error,
+                    process: false
+                });
+            });
+
+        movies.forEach(async (movie) => {
+            await character_movie.create({
+                character_id: id,
+                movie_id: movie
+            }).catch(error => {
+                return res.status(404).send({
+                    message: 'Hubo un al crear el nuevo registro',
+                    error,
+                    process: false
+                });
+            });
+        });
 
         const updatedCharacter = await objCharacter.update(body);
         return res.status(200).send({
