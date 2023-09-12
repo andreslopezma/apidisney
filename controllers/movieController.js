@@ -2,10 +2,12 @@ const { ValidationError, Op } = require('sequelize');
 const { Movie } = require('../models');
 
 exports.getAllMovies = async ({ query }, res) => {
+    const { order } = query;
+    let conditions = {};
+    delete query.order;
     try {
         if (Object.keys(query).find(key => key == 'title')) {
-            query = {
-                ...query,
+            conditions = {
                 title: {
                     [Op.like]: `%${query['title']}%`
                 }
@@ -14,10 +16,26 @@ exports.getAllMovies = async ({ query }, res) => {
         const movies = await Movie.findAll({
             where: {
                 is_delete: false,
+                ...conditions,
                 ...query
-            }
+            },
+            order: [
+                ['title', order ? order : 'ASC']
+            ]
         });
         res.status(200).json(movies);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+exports.getAllMovie = async ({ params }, res) => {
+    const { id } = params
+    try {
+        const objCharacter = await Movie.findAll({
+            where: { id }
+        });
+        res.status(200).json(objCharacter);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

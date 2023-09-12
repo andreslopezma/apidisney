@@ -27,7 +27,8 @@ module.exports = (sequelize, DataTypes) => {
         model: 'character',
         key: 'id'
       }
-    }
+    },
+    is_delete: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'character_movie',

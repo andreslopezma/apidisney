@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       character.belongsToMany(models.Movie, {
         through: 'character_movie',
-        foreignKey: 'movie_id',
+        foreignKey: 'character_id',
+        otherKey: 'movie_id',
         as: 'movie'
       })
     }
