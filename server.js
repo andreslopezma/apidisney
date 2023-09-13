@@ -1,6 +1,7 @@
 const express = require('express');
 const sequelize = require('./database');
 const movieRoutes = require('./routes/movieRoutes');
+const genderRoutes = require('./routes/genderRoutes');
 const characterRoutes = require('./routes/characterRoutes');
 
 const cors = require('cors');
@@ -16,6 +17,7 @@ app.use(cors());
 // routes
 app.use(movieRoutes);
 app.use(characterRoutes);
+app.use(genderRoutes);
 
 sequelize.sync()
     .then(() => {
