@@ -73,7 +73,18 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    image: DataTypes.STRING,
+    image: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'La imagen es obligatorio'
+        },
+        notEmpty: {
+          msg: 'La imagen no puede estar vacio'
+        }
+      }
+    },
     is_delete: DataTypes.BOOLEAN
   }, {
     sequelize,
