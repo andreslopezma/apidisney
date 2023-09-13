@@ -14,6 +14,7 @@ exports.getAllCharacters = async ({ query }, res) => {
                 }
             };
         }
+        delete query.name;
         const objCharacter = await character.findAll({
             where: {
                 is_delete: false,
