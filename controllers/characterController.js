@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { ValidationError, Op } = require('sequelize');
 const { character, Movie, character_movie } = require('../models');
 
@@ -23,7 +24,18 @@ exports.getAllCharacters = async ({ query }, res) => {
                 ['name', order ? order : 'ASC']
             ]
         });
-        res.status(200).json(objCharacter);
+
+        res.status(200).json(objCharacter.map(({ image, id, name, age, history, weight }) => {
+            const base64Image = image ? fs.readFileSync(image).toString('base64') : '';
+            return {
+                id,
+                name,
+                age,
+                history,
+                weight,
+                image: `data:image/jpeg;base64,${base64Image}`
+            }
+        }));
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -49,11 +61,25 @@ exports.getCharacter = async ({ params }, res) => {
     }
 }
 
-exports.createCharaceter = async ({ body }, res) => {
+exports.createCharaceter = async ({ body, file }, res) => {
     try {
         const { movies } = body;
-        const { dataValues } = await character.create(body);
-        movies.forEach(async (movie) => {
+        delete body.movies;
+
+        const { dataValues } = await character.create({
+            image: `./uploads/${file.originalname}`,
+            ...body
+        });
+
+        if (!movies.split(',')) {
+            return res.status(400).send({
+                message: 'No se han seleccionado peliculas',
+                error,
+                process: false
+            });
+        }
+
+        movies.split(',').forEach(async (movie) => {
             await character_movie.create({
                 character_id: dataValues.id,
                 movie_id: movie
@@ -85,9 +111,13 @@ exports.updateCharacter = async ({ body, params }, res) => {
     try {
         const { id } = params;
         const { movies } = body;
+
         const objCharacter = await character.findByPk(id);
         if (!objCharacter) {
             return res.status(404).send({ message: 'Personaje no encontrada' });
+        }
+        if (!movies) {
+            return res.status(404).send({ message: 'No se han seleccionado peliculas' });
         }
         // delete the old chracter movies
         character_movie.update(
